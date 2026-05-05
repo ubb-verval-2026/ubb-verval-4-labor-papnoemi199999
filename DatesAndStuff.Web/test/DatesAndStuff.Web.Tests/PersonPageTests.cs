@@ -97,29 +97,43 @@ public class PersonPageTests
         Assert.That(verificationErrors.ToString(), Is.EqualTo(""));
     }
 
-    [Test]
-    public void Person_SalaryIncrease_ShouldIncrease()
+    [TestCase(0, 5000)]
+    [TestCase(5, 5250)]
+    [TestCase(10, 5500)]
+    [TestCase(20, 6000)]
+    public void Person_SalaryIncrease_ShouldIncrease(double percentage, double expectedSalary)
     {
         // Arrange
         driver.Navigate().GoToUrl(BaseURL);
-        driver.FindElement(By.XPath("//*[@data-test='PersonPageNavigation']")).Click();
 
-        var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+        var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+        wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));
 
-        var input = wait.Until(ExpectedConditions.ElementExists(By.XPath("//*[@data-test='SalaryIncreasePercentageInput']")));
+        var navigationButton = wait.Until(ExpectedConditions.ElementToBeClickable(
+            By.XPath("//*[@data-test='PersonPageNavigation']")
+        ));
+        navigationButton.Click();
+
+        var inputBy = By.XPath("//*[@data-test='SalaryIncreasePercentageInput']");
+        var submitButtonBy = By.XPath("//*[@data-test='SalaryIncreaseSubmitButton']");
+        var salaryLabelBy = By.XPath("//*[@data-test='DisplayedSalary']");
+
+        var input = wait.Until(ExpectedConditions.ElementToBeClickable(inputBy));
+        input.Click();
         input.Clear();
-        input.SendKeys("5");
+        input.SendKeys(percentage.ToString());
 
         // Act
-        var submitButton = wait.Until(ExpectedConditions.ElementExists(By.XPath("//*[@data-test='SalaryIncreaseSubmitButton']")));
+        var submitButton = wait.Until(ExpectedConditions.ElementToBeClickable(submitButtonBy));
         submitButton.Click();
 
-
         // Assert
-        var salaryLabel = wait.Until(ExpectedConditions.ElementExists(By.XPath("//*[@data-test='DisplayedSalary']")));
+        var salaryLabel = wait.Until(ExpectedConditions.ElementIsVisible(salaryLabelBy));
         var salaryAfterSubmission = double.Parse(salaryLabel.Text);
-        salaryAfterSubmission.Should().BeApproximately(5250, 0.001);
+
+        salaryAfterSubmission.Should().BeApproximately(expectedSalary, 0.001);
     }
+
     private bool IsElementPresent(By by)
     {
         try
