@@ -134,6 +134,48 @@ public class PersonPageTests
         salaryAfterSubmission.Should().BeApproximately(expectedSalary, 0.001);
     }
 
+    [Test]
+    public void Person_SalaryIncrease_WithLessThanMinusTen_ShouldShowValidationErrors()
+    {
+        // Arrange
+        driver.Navigate().GoToUrl(BaseURL);
+
+        var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+        wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));
+
+        var navigationButton = wait.Until(ExpectedConditions.ElementToBeClickable(
+            By.XPath("//*[@data-test='PersonPageNavigation']")
+        ));
+        navigationButton.Click();
+
+        var inputBy = By.XPath("//*[@data-test='SalaryIncreasePercentageInput']");
+        var submitButtonBy = By.XPath("//*[@data-test='SalaryIncreaseSubmitButton']");
+
+        var input = wait.Until(ExpectedConditions.ElementToBeClickable(inputBy));
+        input.Click();
+        input.Clear();
+        input.SendKeys("-11");
+
+        // Act
+        var submitButton = wait.Until(ExpectedConditions.ElementToBeClickable(submitButtonBy));
+        submitButton.Click();
+
+        // Assert
+        var topError = wait.Until(ExpectedConditions.ElementIsVisible(
+            By.CssSelector(".validation-summary-errors")
+        ));
+
+        var fieldError = wait.Until(ExpectedConditions.ElementIsVisible(
+            By.CssSelector(".validation-message")
+        ));
+
+        topError.Displayed.Should().BeTrue();
+        fieldError.Displayed.Should().BeTrue();
+
+        topError.Text.Should().NotBeNullOrWhiteSpace();
+        fieldError.Text.Should().NotBeNullOrWhiteSpace();
+    }
+
     private bool IsElementPresent(By by)
     {
         try
