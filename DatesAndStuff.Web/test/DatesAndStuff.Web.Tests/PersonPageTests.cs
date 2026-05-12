@@ -162,7 +162,7 @@ public class PersonPageTests
 
         // Assert
         var topError = wait.Until(ExpectedConditions.ElementIsVisible(
-            By.CssSelector(".validation-summary-errors")
+            By.CssSelector(".validation-message")
         ));
 
         var fieldError = wait.Until(ExpectedConditions.ElementIsVisible(
