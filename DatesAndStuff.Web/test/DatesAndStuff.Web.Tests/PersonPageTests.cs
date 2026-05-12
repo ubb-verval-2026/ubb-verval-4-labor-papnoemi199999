@@ -154,7 +154,7 @@ public class PersonPageTests
         var input = wait.Until(ExpectedConditions.ElementToBeClickable(inputBy));
         input.Click();
         input.Clear();
-        input.SendKeys("-10");
+        input.SendKeys("-11");
 
         // Act
         var submitButton = wait.Until(ExpectedConditions.ElementToBeClickable(submitButtonBy));
