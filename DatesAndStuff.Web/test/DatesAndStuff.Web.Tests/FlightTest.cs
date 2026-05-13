@@ -41,6 +41,8 @@ public class FlightTest
     public void BlazeDemo_MexicoCity_To_Dublin_ShouldHaveAtLeastThreeFlights()
     {
         // Arrange
+        double maximumPrice = 500;
+
         driver.Navigate().GoToUrl("https://blazedemo.com");
 
         var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
@@ -75,8 +77,33 @@ public class FlightTest
         var flights = driver.FindElements(By.CssSelector("table tbody tr"));
 
         flights.Count.Should().BeGreaterThanOrEqualTo(3);
-    }
 
+        foreach (var flight in flights)
+        {
+            var columns = flight.FindElements(By.TagName("td"));
+
+            var priceText = columns[5].Text;
+            priceText = priceText.Replace("$", "");
+
+            var price = double.Parse(priceText);
+
+            if (price < maximumPrice)
+            {
+                var screenshot = ((ITakesScreenshot)driver).GetScreenshot();
+
+                var downloadsPath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                    "Downloads"
+                );
+
+                var filePath = Path.Combine(downloadsPath, "cheap-dublin-flight.png");
+
+                screenshot.SaveAsFile(filePath);
+
+                break;
+            }
+        }
+    }
     private bool IsElementPresent(By by)
     {
         try
